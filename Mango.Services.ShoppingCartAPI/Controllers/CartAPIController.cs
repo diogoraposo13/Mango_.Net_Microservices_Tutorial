@@ -30,7 +30,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpGet("GetCart/{userId}")]
-        public async Task<ResponseDto> GetdCart(string userId)
+        public async Task<ResponseDto> GetCart(string userId)
         {
             try
             {
@@ -87,19 +87,18 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                 _db.CartHeaders.Update(cartFromDb);
                 await _db.SaveChangesAsync();
                 _response.Result = true;
-
             }
             catch (Exception ex)
             {
-                _response.Message = ex.Message.ToString();
                 _response.IsSuccess = false;
+                _response.Message = ex.ToString();
             }
             return _response;
         }
 
 
 
-        
+
 
 
         [HttpPost("CartUpsert")]
@@ -107,8 +106,9 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         {
             try
             {
-                var cartHeaderFromDb = await _db.CartHeaders.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == cartDto.CartHeader.UserId);
-                if(cartHeaderFromDb == null)
+                var cartHeaderFromDb = await _db.CartHeaders.AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.UserId == cartDto.CartHeader.UserId);
+                if (cartHeaderFromDb == null)
                 {
                     //create header and details
                     CartHeader cartHeader = _mapper.Map<CartHeader>(cartDto.CartHeader);
@@ -123,10 +123,9 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                     //if header is not null
                     //check if details has same product
                     var cartDetailsFromDb = await _db.CartDetails.AsNoTracking().FirstOrDefaultAsync(
-                        u => u.ProductId == cartDto.CartDetails.First().ProductId && 
+                        u => u.ProductId == cartDto.CartDetails.First().ProductId &&
                         u.CartHeaderId == cartHeaderFromDb.CartHeaderId);
-
-                    if(cartDetailsFromDb == null)
+                    if (cartDetailsFromDb == null)
                     {
                         //create cartdetails
                         cartDto.CartDetails.First().CartHeaderId = cartHeaderFromDb.CartHeaderId;
@@ -142,12 +141,8 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                         _db.CartDetails.Update(_mapper.Map<CartDetails>(cartDto.CartDetails.First()));
                         await _db.SaveChangesAsync();
                     }
-                    
                 }
                 _response.Result = cartDto;
-
-
-
             }
             catch (Exception ex)
             {
@@ -155,7 +150,6 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                 _response.IsSuccess = false;
             }
             return _response;
-
         }
 
 
